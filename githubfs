@@ -46,7 +46,10 @@ class GithubFS(routefs.RouteFS):
 
     def get_branch(self, user, repo, branch, **kwargs):
         project = '%s/%s' % (user, repo)
-        return self.branch_cache.get(project, {}).get(branch, None)
+        sha1 = self.branch_cache.get(project, {}).get(branch, None)
+        if sha1:
+            sha1 += '\n'
+        return sha1
 
 
 if __name__ == '__main__':
