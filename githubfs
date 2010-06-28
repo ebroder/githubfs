@@ -19,6 +19,7 @@ class GithubFS(routefs.RouteFS):
         m.connect('/', controller='list_users')
         m.connect('/{user}', controller='list_repos')
         m.connect('/{user}/{repo}', controller='list_branches')
+        m.connect('/{user}/{repo}/{branch}', controller='get_branch')
         return m
 
     def list_users(self, **kwargs):
@@ -37,11 +38,15 @@ class GithubFS(routefs.RouteFS):
         project = '%s/%s' % (user, repo)
         if project not in self.branch_cache:
             try:
-                self.branch_cache[project] = self.github.repos.branches(project).keys()
+                self.branch_cache[project] = self.github.repos.branches(project)
             except:
-                self.branch_cache[project] = None
+                self.branch_cache[project] = {}
 
-        return self.branch_cache[project]
+        return self.branch_cache[project].keys()
+
+    def get_branch(self, user, repo, branch, **kwargs):
+        project = '%s/%s' % (user, repo)
+        return self.branch_cache.get(project, {}).get(branch, None)
 
 
 if __name__ == '__main__':
