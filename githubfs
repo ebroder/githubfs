@@ -22,7 +22,7 @@ class GithubFS(routefs.RouteFS):
         return m
 
     def list_users(self, **kwargs):
-        return self.user_cache.keys()
+        return [user for user, projects in self.user_cache.iteritems() if projects]
 
     def list_repos(self, user, **kwargs):
         if user not in self.user_cache:
