@@ -10,7 +10,8 @@ class GithubFS(routefs.RouteFS):
     def __init__(self, *args, **kwargs):
         super(GithubFS, self).__init__(*args, **kwargs)
 
-        self.users = set()
+        self.user_cache = {}
+        self.branch_cache = {}
         self.github = client.Github()
 
     def make_map(self):
@@ -21,22 +22,26 @@ class GithubFS(routefs.RouteFS):
         return m
 
     def list_users(self, **kwargs):
-        return list(self.users)
+        return self.user_cache.keys()
 
     def list_repos(self, user, **kwargs):
-        try:
-            repos = self.github.repos.list(user)
-            self.users.add(user)
-            return [r.name for r in repos]
-        except:
-            return None
+        if user not in self.user_cache:
+            try:
+                self.user_cache[user] = [r.name for r in self.github.repos.list(user)]
+            except:
+                self.user_cache[user] = None
+
+        return self.user_cache[user]
 
     def list_branches(self, user, repo, **kwargs):
-        try:
-            branches = self.github.repos.branches('%s/%s' % (user, repo))
-            return branches.keys()
-        except:
-            return None
+        project = '%s/%s' % (user, repo)
+        if project not in self.branch_cache:
+            try:
+                self.branch_cache[project] = self.github.repos.branches(project).keys()
+            except:
+                self.branch_cache[project] = None
+
+        return self.branch_cache[project]
 
 
 if __name__ == '__main__':
