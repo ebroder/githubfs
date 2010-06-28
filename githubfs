@@ -1,0 +1,35 @@
+#!/usr/bin/python
+
+
+from github2 import client
+import routes
+import routefs
+
+
+class GithubFS(routefs.RouteFS):
+    def __init__(self, *args, **kwargs):
+        super(GithubFS, self).__init__(*args, **kwargs)
+
+        self.users = set()
+        self.github = client.Github()
+
+    def make_map(self):
+        m = routes.Mapper()
+        m.connect('/', controller='list_users')
+        m.connect('/{user}', controller='list_repos')
+        return m
+
+    def list_users(self, **kwargs):
+        return list(self.users)
+
+    def list_repos(self, user, **kwargs):
+        try:
+            repos = self.github.repos.list(user)
+            self.users.add(user)
+            return [r.name for r in repos]
+        except:
+            return None
+
+
+if __name__ == '__main__':
+    routefs.main(GithubFS)
