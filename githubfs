@@ -17,6 +17,7 @@ class GithubFS(routefs.RouteFS):
         m = routes.Mapper()
         m.connect('/', controller='list_users')
         m.connect('/{user}', controller='list_repos')
+        m.connect('/{user}/{repo}', controller='list_branches')
         return m
 
     def list_users(self, **kwargs):
@@ -27,6 +28,13 @@ class GithubFS(routefs.RouteFS):
             repos = self.github.repos.list(user)
             self.users.add(user)
             return [r.name for r in repos]
+        except:
+            return None
+
+    def list_branches(self, user, repo, **kwargs):
+        try:
+            branches = self.github.repos.branches('%s/%s' % (user, repo))
+            return branches.keys()
         except:
             return None
 
